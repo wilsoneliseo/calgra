@@ -1,0 +1,370 @@
+%ifndef IO
+%define IO
+	; |- Descripcion :: macros para entrada y salida utilizando
+	; |       interrupciones. Son ejecutables en DOS. Para emular
+	; |       DOS se utilizó DOSBox. Es ensamblado por NASM.
+	; |
+	; |- Autor :: Wilson S. Tubín
+	; | 
+	; |- Para emacs :: Utilizando el editor Emacs y utilizando
+	; |       org-mode se puede visualizar la estructura de ester
+	; |       archivo. Siga estos pasos:
+	; |
+	; |  + De nasm-mode a org-mode. Con `C-M-%´ hacer:
+	; |    1. `[[:blank:]]*;[[:blank:]]*\(\*+\)´ -> `\1´
+	; |    2. activar el modo con `M-x org-mode´
+	; |  + De org-mode a nasm-mode. Con `C-M-%´ hacer:
+	; |    1. activar modo nasm con `M-x nasm-mode´
+	; |    2. `^\(\*+\)´ -> `<TAB>; \1´
+	
+
+	; ==================================================
+	; * mdl'' MACROS DE LINEA
+	; ==================================================
+%define N 0xA		;nueva linea
+%define R 0xD		;retorno de carro
+%define T 0x9		;tabulacion horizontal
+%define APOS 0x27	;apostrofo
+%define CUADRITO 0xFE	;cuadrito relleno tipo item
+%define SPC 0x20	;espacio en blanco
+%define BACKTICK 0x60
+%define FLECHA_DER 0xAF		;doble flecha apunta a la derecha
+%define FLECHA_IZQ 0xAE		;doble flecha apunta a la izquierda
+%define BARRA 0xB3
+%define PUNTOM 0xF9
+%define CINT 0xF4		;Char INTegral
+%define	ANSI_INT 131		;caracter de integral en ansi para archivos
+%define F_IZ 0x4b		;codigo flecha IZquierda
+%define F_AB 0x50		;codigo flecha ABajo
+%define F_DE 0x4d		;codigo flecha DErecha
+%define F_AR 0x48		;codigo flecha ARriba
+
+	
+	; ==================================================
+	; * mml'' MACROS MULTI LINEA
+	; ==================================================
+
+
+	; --------------------------------------------------
+	; ** 21h
+	; --------------------------------------------------
+	
+	
+	; *** TERMINAR_PROGRAMA
+	; |Salir del programa
+	; |+ Entrada
+	; |  - vacio :: nada
+	; |+ Salida
+	; |  - vacio :: nada
+%macro TERMINAR_PROGRAMA 0
+	mov ah, 4Ch
+	mov al, 0 		;codigo de retorno
+	int 21h
+%endmacro
+
+	; *** PRINT
+	; |Imprimir cadena en salida estandar.
+	; |+ Entrada
+	; |  - dx,%1 :: puntero a cadena que termina en '$'
+	; |+ Salida
+	; |  - vacio :: nada
+%macro PRINT 1
+	mov dx, %1
+    	mov ah,09h      	; funcion 9, imprimir en pantalla
+    	int 21h         	; interrupcion dos
+%endmacro
+
+	; *** PRINT_CHAR
+	; |Imprimir caracter en la salida estandar
+	; |+ Entrada
+	; |  - dl,%1 :: el caracter a imprimir
+	; |+ Salida
+	; |  - al :: la ultima salida de caracter
+	; http://www.ctyme.com/intr/rb-2554.htm
+%macro PRINT_CHAR 1
+	mov ah,02h
+	mov dl,%1
+	int 21h
+%endmacro
+
+	; *** ABRIR_ARCHIVO
+	; |Abre un archivo existente.
+	; |+ Entrada
+	; |  - dx,%1 :: puntero a cadena con nombre/ruta del archivo a
+	; |             abrir. Este nombre debe finalizar en 0 
+	; |+ Salidas
+	; |  - CF=0 :: archivo se abrio exitosamente. En AX el handle
+	; |            del archivo
+	; |  - CF=1 :: ocurrio algun error. El código del error en AX
+	; http://www.ctyme.com/intr/rb-2779.htm
+%macro ABRIR_ARCHIVO 1
+	mov ah,3Dh
+	mov al,00h		;00h=read, 01h=write, 02h=read/write
+	mov dx, %1
+	int 21h
+%endmacro
+
+	; *** LEER_ARCHIVO
+	; |Lee archivo abierto.
+	; |+ Entradas
+	; |  - bx,%1 :: handle del archivo
+	; |  - cx,%2 :: numero de bytes a leer
+	; |  - dx,%3 :: buffer en donde guardar lo leido
+	; |+ Salidas
+	; |  - CF=0 :: se leyo exitosamente. En AX el numero de bytes
+	; |            actualmente leídos
+	; |  - CF=1 :: ocurrio algun error. El código del error en AX
+	; http://www.ctyme.com/intr/rb-2783.htm
+%macro LEER_ARCHIVO 3
+	mov ah,3Fh
+	mov bx,%1
+	mov cx,%2
+	mov dx,%3
+	int 21h
+%endmacro
+
+
+	; *** ESENAR
+	; |EScribir EN un ARchivo abierto
+	; |+ Entradas
+	; |  - bx,%1 :: handle del archivo
+	; |  - cx,%2 :: numero de bytes a escribir
+	; |  - dx,%3 :: puntero a array que se escribirá
+	; |+ Salidas
+	; |  - CF=0 :: se escribió exitosamente. En AX el numero de
+	; |            bytes actualmente escritos.
+	; |  - CF=1 :: ocurrio algun error. El código del error en AX
+	; |            (05h,06h).
+	; http://www.ctyme.com/intr/rb-2791.htm
+%macro ESENAR 3
+	mov ah,40h
+	mov bx,%1
+	mov cx,%2
+	mov dx,%3
+	int 21h
+%endmacro
+	
+	; *** CERRAR_ARCHIVO
+	; |Cierra un archivo
+	; |+ Entrada
+	; |  - bx,%1 :: handle del archivo a cerrar
+	; |+ Salida
+	; |  - CF=0 :: se cerro exitosamente. AX destruido
+	; |  - CF=1 :: ocurrio algun error al cerrar. En AX el código
+	; |            de error (06h).
+%macro CERRAR_ARCHIVO 1
+	mov ah,3Eh
+	mov bx,%1
+	int 21h
+%endmacro
+
+	; *** CREAR_ARCHIVO
+	; |Crear un archivo nuevo o truncar si ya existe.
+	; |+ Entrada
+	; |  - dx,%1 :: puntero a cadena que será nombre del
+	; |             archivo. Este nombre debe terminar en 0.
+	; |+ Salida
+	; |  - CF=0 :: se creo exitosamente. En AX el handle de
+	; |            archivo. 
+	; |  - CF=1 :: ocurrio algun error al crear En AX el código
+	; |            de error (03h,04h,05h).
+	; http://www.ctyme.com/intr/rb-2778.htm#Table1401
+%macro CREAR_ARCHIVO 1
+	mov ah,3Ch
+	
+	; ATRIBUTO DEL ARCHIVO CREADO.
+	; mov cx, 0 ; normal - sin atributos
+	; mov cx, 1 ; solo lectura
+	; mov cx, 2 ; oculto
+	; mov cx, 4 ; de sistema
+	; mov cx, 7 ; oculto, de sitema y solo lectura
+	; mov cx, 16 ; archivo
+	mov cx,0
+
+	mov dx,%1
+	int 21h
+%endmacro
+
+	; --------------------------------------------------
+	; ** 10h
+	; --------------------------------------------------	
+
+	; *** UBICAR_CURSOR
+	; |ubicar cursor en la pantalla cuando se esta en modo
+	; |texto.
+	; |+ Entradas
+	; |  - dh,%1 :: fila
+	; |  - dl,%2 :: columna
+%macro UBICAR_CURSOR 2
+        mov ah,02h              ;func. de ubic. del cursor
+        mov dh,%1		;fila
+        mov dl,%2		;columna
+        mov bh,0                ;pag. #0
+        int 10h
+%endmacro
+	
+	
+	
+	; *** LIMPIAR_PANTALLA
+	; |Limpiar pantalla cuando se esta en modo texto.
+	; |+ Entrada
+	; |  - vacio :: nada
+	; |+ Salida
+	; |  - vacio :: nada
+%macro LIMPIAR_PANTALLA 0
+        mov ax,0600h         ;toda la pantalla
+        mov bh,7             ;sigue video color normal
+        mov cx,0000          ;vÇrtice superior izq.
+        mov dx,184Fh         ;vÇrtice inferior derecho
+        int 10h              ;llamada a BIOS
+%endmacro
+
+	; *** DESPLAZAR_ARRIBA
+	; |Desplaza hacia arriba. Es como borrar la pantalla según los
+	; |parámentros explicados a  continuación:
+	; |+ Entrada
+	; |  - ch,%1 :: fila superior izquierda
+	; |  - cl,%2 :: columna superior izquierda
+	; |  - dh,%3 :: fila inferior derecha
+	; |  - dl,%4 :: columna inferior derecha
+	; |  - al,%5 :: número de líneas a desplazarse hacia arriba
+	; |+ Salida
+	; |  - vacio :: nada
+	; http://www.ctyme.com/intr/rb-0096.htm
+%macro DESPLAZAR_ARRIBA 5
+	mov ah,06h
+	mov al,%5
+	mov bh,7		;sigue video color normal
+	mov ch,%1
+	mov cl,%2
+	mov dh,%3
+	mov dl,%4
+	int 10h
+%endmacro
+
+	; --------------------------------------------------
+	; ** 16h
+	; --------------------------------------------------
+	
+	; *** GETCHAR
+	; |Obtiene ascii de tecla presionada sin eco, via BIOS.
+	; |+ Entrada
+	; |  - vacio :: nada
+	; |+ Salida
+	; |  - AL :: en este registro se almacena el caracter leido
+	; |  - AH :: BIOS scan code
+	; http://www.ctyme.com/intr/rb-1754.htm
+%macro GETCHAR 0
+	xor ah,ah		;colocar ah a 0
+	int 16h
+%endmacro	
+
+	
+	; --------------------------------------------------
+	; ** Mixto
+	; --------------------------------------------------
+
+
+	; *** READ_FOR_BUFF_INPUT
+	; |lee cadena de entrada estandar y lo guarda un arreglo. Se
+	; |refirá a este arreglo como buffInput, de aqui en adelante. 
+	; |+ Entradas
+	; |  - dh,%1 :: fila
+	; |  - bx,%2 :: columna
+	; |  - dx,%3 :: arreglo donde guardar la entrada del usuario
+	; |+ Salida
+	; |  - arreglo buffInput con la entrada del usuario. La
+	; |    interrupcion utilizada deja dicho arreglo en el
+	; |    siguiente formato, suponiedo que el usuario ingreso
+	; |    la cadena `cad´ en la entrada estandar:
+	; |    #+BEGIN_EXAMPLE
+	; |	+-----+-----+-----+-----+-----+-----+-----+
+	; |    	|  41 |  3  |  c  |  a  |  d  | \r  | ... |
+	; |	+-----+-----+-----+-----+-----+-----+-----+
+	; |    #+END_EXAMPLE
+	; |
+	; |    donde:
+	; |    * [buffInput] contiene 41, indica el numero maximo de
+	; |      chars que puede guardar
+	; |    * [buffInput+1] contiene 3 indica el numero de chars
+	; |      ingresados por el usuario 
+	; |    * [buffInput+2] contiene 'c' es el primer char de la
+	; |      cadena ingresada. La siguientes dos posiciones tiene
+	; |      'a' y 'd'
+	; |    * [buffInput+5] contiene el retorno de carro. El
+	; |      contenido del resto del arreglo esta indefinido
+%macro READ_FOR_BUFF_INPUT 3
+	; ubicar cursor
+        mov ah,02h              ;func. de ubic. del cursor
+        mov dh,%1		;fila
+        mov dl,%2		;columna
+        mov bh,0                ;pag. #0
+        int 10h
+
+	
+	; mov ah,0Ch ;limpiar buffer antes de llamar a 0Ah
+	; mov al,0Ah
+	mov ah,0Ah
+	mov dx,%3		;arreglo donde guardar la entrada del usuario
+	int 21h
+%endmacro
+
+
+	; *** READ_FOR_BUFF_INPUT
+	; |lee cadena de entrada estandar y lo guarda un arreglo. NO
+	; |necesita de fila y columna.
+	; |+ Entradas
+	; |  - dx,%1 :: arreglo donde guardar la entrada del usuario
+	; |+ Salida
+	; |  - arreglo buffInput con la entrada del usuario.
+%macro READ_FOR_BUFF_INPUT 1
+	; mov ah,0Ch ;limpiar buffer antes de llamar a 0Ah
+	; mov al,0Ah
+	mov ah,0Ah
+	mov dx,%1;arreglo donde guardar la entrada del usuario
+	int 21h
+%endmacro	
+
+	; *** PRINT
+	; |Imprimir cadena en salida estandar en una fila y columna
+	; |especificada.
+	; |+ Entrada
+	; |  - dh,%1 :: fila
+	; |  - dl,%2 :: columna
+	; |  - dx,%3 :: puntero a cadena que termina en '$'
+	; |+ Salida
+	; |  - vacio :: nada
+%macro PRINT 3
+	; ubicar cursor
+        mov dh,%1		;fila
+        mov dl,%2		;columna
+        mov bh,0                ;pag. #0
+	mov ah,02h              ;func. de ubic. del cursor
+        int 10h
+
+	; imprimir
+	mov dx, %3
+    	mov ah,09h      	; funcion 9, imprimir en pantalla
+    	int 21h         	; interrupcion dos
+%endmacro
+
+	; *** GETCHAR
+	; |Obtiene ascii de tecla presionada, aunque se emplea para
+	; |parar el programa, hasta que el usuario presione alguna
+	; |tecla, mostrando un mensaje que venga al caso.
+	; |+ Entrada
+	; |  - %1 :: Puntero a cadena que se mostrara.
+	; |+ Salida
+	; |  - AL :: en este registro se almacena el caracter leido
+%macro GETCHAR 1
+	mov dx, %1
+    	mov ah,09h      	; funcion 9, imprimir en pantalla
+    	int 21h         	; interrupcion dos
+	
+	xor ah,ah		;colocar ah a 0
+	int 16h
+%endmacro	
+
+
+	
+%endif

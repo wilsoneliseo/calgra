@@ -1,0 +1,31 @@
+%ifndef PARA_RUTINA_TIPO_FUNCION
+    %define PARA_RUTINA_TIPO_FUNCION
+	    ; recibe el numero de variables locales a utilizar
+    %macro PROLOGO 1
+	    push bp
+	    mov bp, sp
+	    sub sp,%1*2
+    %endmacro
+
+	    ; recibe el numero de parametros a utilizar
+    %macro EPILOGO 1
+	    mov sp, bp
+	    pop bp
+	    ret %1*2;ret recibe la cantidad de bytes a retirar de la pila
+    %endmacro
+
+%macro PUSHA 0
+	push ax
+	push bx
+	push cx
+	push dx
+%endmacro
+
+%macro POPA 0
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+%endmacro
+	
+%endif

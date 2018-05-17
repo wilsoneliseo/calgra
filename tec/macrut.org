@@ -1,0 +1,508 @@
+* Archivo io.mac
+Macros para entrada y salida utilizando interrupciones. Son
+ejecutables en DOS. Para emular DOS se utilizó DOSBox. Es ensamblado
+por NASM.
+
+** TERMINAR_PROGRAMA
+Salir del programa
++ Entrada
+  - vacio :: nada
++ Salida
+  - vacio :: nada
+
+** PRINT
+Imprimir cadena en salida estandar.
++ Entrada
+  - dx,%1 :: puntero a cadena que termina en '$'
++ Salida
+  - vacio :: nada
+
+** PRINT_CHAR
+Imprimir caracter en la salida estandar
++ Entrada
+  - dl,%1 :: el caracter a imprimir
++ Salida
+  - al :: la ultima salida de caracter
+[[http://www.ctyme.com/intr/rb-2554.htm][ir]]
+
+** ABRIR_ARCHIVO
+Abre un archivo existente.
++ Entrada
+  - dx,%1 :: puntero a cadena con nombre/ruta del archivo a
+             abrir. Este nombre debe finalizar en 0 
++ Salidas
+  - CF=0 :: archivo se abrio exitosamente. En AX el handle
+            del archivo
+  - CF=1 :: ocurrio algun error. El código del error en AX
+[[http://www.ctyme.com/intr/rb-2779.htm][ir]]
+	 
+** LEER_ARCHIVO
+Lee archivo abierto.
++ Entradas
+  - bx,%1 :: handle del archivo
+  - cx,%2 :: numero de bytes a leer
+  - dx,%3 :: buffer en donde guardar lo leido
++ Salidas
+  - CF=0 :: se leyo exitosamente. En AX el numero de bytes
+            actualmente leídos
+  - CF=1 :: ocurrio algun error. El código del error en AX
+[[http://www.ctyme.com/intr/rb-2783.htm][ir]]
+
+
+** ESENAR
+EScribir EN un ARchivo abierto
++ Entradas
+  - bx,%1 :: handle del archivo
+  - cx,%2 :: numero de bytes a escribir
+  - dx,%3 :: puntero a array que se escribirá
++ Salidas
+  - CF=0 :: se escribió exitosamente. En AX el numero de
+            bytes actualmente escritos.
+  - CF=1 :: ocurrio algun error. El código del error en AX
+            (05h,06h).
+[[http://www.ctyme.com/intr/rb-2791.htm][ir]]
+
+
+** CERRAR_ARCHIVO
+Cierra un archivo
++ Entrada
+  - bx,%1 :: handle del archivo a cerrar
++ Salida
+  - CF=0 :: se cerro exitosamente. AX destruido
+  - CF=1 :: ocurrio algun error al cerrar. En AX el código
+            de error (06h).
+
+** CREAR_ARCHIVO
+Crear un archivo nuevo o truncar si ya existe.
++ Entrada
+  - dx,%1 :: puntero a cadena que será nombre del
+             archivo. Este nombre debe terminar en 0.
++ Salida
+  - CF=0 :: se creo exitosamente. En AX el handle de
+            archivo. 
+  - CF=1 :: ocurrio algun error al crear En AX el código
+            de error (03h,04h,05h).
+[[http://www.ctyme.com/intr/rb-2778.htm#Table1401][ir]]
+
+
+** UBICAR_CURSOR
+ubicar cursor en la pantalla cuando se esta en modo
+texto.
++ Entradas
+  - dh,%1 :: fila
+  - dl,%2 :: columna
+
+
+** LIMPIAR_PANTALLA
+Limpiar pantalla cuando se esta en modo texto.
++ Entrada
+  - vacio :: nada
++ Salida
+  - vacio :: nada
+
+
+** DESPLAZAR_ARRIBA
+Desplaza hacia arriba. Es como borrar la pantalla según los
+parámentros explicados a  continuación:
++ Entrada
+  - ch,%1 :: fila superior izquierda
+  - cl,%2 :: columna superior izquierda
+  - dh,%3 :: fila inferior derecha
+  - dl,%4 :: columna inferior derecha
+  - al,%5 :: número de líneas a desplazarse hacia arriba
++ Salida
+  - vacio :: nada
+
+[[http://www.ctyme.com/intr/rb-0096.htm][ir]]
+
+
+** GETCHAR
+Obtiene ascii de tecla presionada sin eco, via BIOS.
++ Entrada
+  - vacio :: nada
++ Salida
+  - AL :: en este registro se almacena el caracter leido
+
+** READ_FOR_BUFF_INPUT
+lee cadena de entrada estandar y lo guarda un arreglo. Se
+refirá a este arreglo como buffInput, de aqui en adelante. 
++ Entradas
+  - dh,%1 :: fila
+  - bx,%2 :: columna
+  - dx,%3 :: arreglo donde guardar la entrada del usuario
++ Salida
+  - arreglo buffInput con la entrada del usuario. La
+    interrupcion utilizada deja dicho arreglo en el
+    siguiente formato, suponiedo que el usuario ingreso
+    la cadena `cad´ en la entrada estandar:
+    #+BEGIN_EXAMPLE
+	+-----+-----+-----+-----+-----+-----+-----+
+    	|  41 |  3  |  c  |  a  |  d  | \r  | ... |
+	+-----+-----+-----+-----+-----+-----+-----+
+    #+END_EXAMPLE
+
+    donde:
+    * [buffInput] contiene 41, indica el numero maximo de
+      chars que puede guardar
+    * [buffInput+1] contiene 3 indica el numero de chars
+      ingresados por el usuario 
+    * [buffInput+2] contiene 'c' es el primer char de la
+      cadena ingresada. La siguientes dos posiciones tiene
+      'a' y 'd'
+    * [buffInput+5] contiene el retorno de carro. El
+      contenido del resto del arreglo esta indefinido
+
+** READ_FOR_BUFF_INPUT
+Lee cadena de entrada estandar y lo guarda un arreglo. NO
+necesita de fila y columna.
++ Entradas
+  - dx,%1 :: arreglo donde guardar la entrada del usuario
++ Salida
+  - arreglo buffInput con la entrada del usuario.
+
+** PRINT
+Imprimir cadena en salida estandar en una fila y columna
+especificada.
++ Entrada
+  - dh,%1 :: fila
+  - dl,%2 :: columna
+  - dx,%3 :: puntero a cadena que termina en '$'
++ Salida
+  - vacio :: nada
+
+** GETCHAR
+Obtiene ascii de tecla presionada, aunque se emplea para
+parar el programa, hasta que el usuario presione alguna
+tecla, mostrando un mensaje que venga al caso.
++ Entrada
+  - %1 :: Puntero a cadena que se mostrara.
++ Salida
+  - AL :: en este registro se almacena el caracter leido
+
+* Archivo anlex2.asm
+Contiene la funcion 'scanner' que realiza el analisis lexico de una
+funcion polinomica de grado 4 con coeficientes de dos digitos
+positivos o negativos. Un termino correcto debe iniciar con '+' o '-'
+seguido de cero, uno o dos digitos. Luego puede venir o no una 'x' o
+bien 'x^' seguido por '2' o '3' o '4'. La expresion regular es la
+siguiente:
+#+BEGIN_EXAMPLE
+    ER=(('+'|'-')(<d>?<d>)?[x^<expo>|x]?)+;
+    donde: <d>=0|1|2|3|4|5|6|7|8|9 y <expo>=2|3|4
+#+END_EXAMPLE       
+         
+Estos son algunos ejemplos de cadenas lexicamente correctas para este
+lenguaje (debe terminar en ';'):
+#+BEGIN_EXAMPLE
+     +2x+1-99x  +29  +x +29;
+     -90x^3 +5  5x^2;
+#+END_EXAMPLE
+
+
+** scanner
+
+Realiza un analisis lexico de la cadena terminada en ';'. Muestra fila
+y columna si ocurre error. Muestra exito si se reconoce la
+cadena. Guarda los exponentes y coeficientes en una arreglo de
+estructuras.
+
++ Parametro
+  - [BP+6] :: puntero al primer elemento del arreglo de chars a
+                analizar
+  - [BP+4] :: puntero a estructura que guarda coeficientes y
+              exponentes y otros datos de la funcion.
++ Variables Locales
+  1. [BP-2]  fila
+  2. [BP-4]  columna
+  3. [BP-6]  entrada
+  4. [BP-8]  estado
+  5. [BP-0xA]  exponente
+  6. [BP-0xC]  primer char ascii de un coeficiente
+  7. [BP-0xE]  segundo char ascii de un coeficiente
+  8. [BP-0x10]  tercer char ascii de un coeficiente
+  9. [BP-0x12]  numero de chars que forman el coeficiente
+  10. [BP-0x14] contador de terminos por funcion
+
+
+** scanner_f
+Lo mismo que scanner solo que trabaja con un archivo.
+
++ Parametro
+  - [BP+6] :: handle del archivo de donde lee
+  - [BP+4] :: puntero a estructura que guarda coeficientes y
+              exponentes y otros datos de la funcion.
++ Variables Locales
+  1. [BP-2]  fila
+  2. [BP-4]  columna
+  3. [BP-6]  entrada
+  4. [BP-8]  estado
+  5. [BP-0xA]  exponente
+  6. [BP-0xC]  primer char ascii de un coeficiente
+  7. [BP-0xE]  segundo char ascii de un coeficiente
+  8. [BP-0x10]  tercer char ascii de un coeficiente
+  9. [BP-0x12]  numero de chars que forman el coeficiente
+  10. [BP-0x14] contador de terminos por función
+
+** rutinaDeError
+Imprime un mensaje de error lexico.
++ Parametros
+  - [bp+8] :: Fila en binario
+  - [bp+6] :: Columna en binario
+  - [bp+4] :: El caracter ascii que causo el error
++ Entrada
+  - bx :: puntero a cadena que describe el error
++ Salidas
+  - vacio :: nada	
+
+** convNumStrParaNumBin
+Convertir numero en string a numero en binario para el manejo interno
+como cantidad de la representacion numerica de la cadena. Se utilizó
+para leer la cadena directamente de la pila.
+
++ Entradas
+  - di :: puntero al primer elemento del arreglo de caracteres
+          (cadena) a convertir. Cada caracter debe estar a cada dos
+          bytes. Esto es porque se utilizó para leer de la pila cuyos
+          elementos son de 2 bytes.
+
+  - cl :: tamaño de la cadena apuntada por bx
+
++ Salida
+  - ax :: el numero de 1 word en binario. En complemento a dos si es
+          negativo.
+
++ Variable local
+  - [BP-2] :: variable temporal (temp) que guarda la cantidad que
+              finalmente se guarda en ax al terminar el proceso
+
+** convNumStrParaNumBin_arr
+Igual que 'convNumStrParaNumBin' solo que el array de caracteres deben
+estar a cada byte no a cada dos, esto para que no necesariamente deba
+leerse desde la pila.
++ Entradas
+  - di :: puntero al primer elemento del arreglo de caracteres
+          (cadena) a convertir.
+  - cl :: tamaño de la cadena apuntada por di
+
++ Salida
+  - ax :: el numero de 1 word en binario. En complemento a dos si es
+          negativo.
+
++ Variable local
+  - [BP-2] :: variable temporal (temp) que guarda la cantidad que
+              finalmente se guarda en ax al terminar el proceso
+
+** printNumBin
+Imprimir numero binario en la salida estandar
++ Entradas
+  - ax :: el numero binario (word) a imprimir
++ Salidas
+  - vacio :: nada
+
+
+** printNumBin_mas
+Lo mismo que printNumBin solo que los positivos les antepone el signo
+positivo '+'
++ Entradas
+  - ax :: el numero binario (word) a imprimir
++ Salidas
+  - vacio :: nada
+
+
+* Archivo ploter.asm
+
+** dibujar_plano
+dibuja los ejes X y Y del plano cartesiano
++ Parámetros
+  - [BP+6] :: posición x del origen
+  - [BP+4] :: posición y del origen
+
+** putPixel
+Pinta un pixel en cordenada y color dado. Las coordenadas
+son con respecto al origen del plano establecido durante la
+llamada ha 'dibujar_plano'.
++ Entradas
+  - dl :: color
+  - bx :: coordenada x
+  - ax :: coordenada y
+
+** dibujar_linea_horizontal
+dibuja una linea horizontal
++ Parámetros
+  - [BP+10] :: color
+  - [BP+8] :: ancho
+  - [BP+6] :: x
+  - [BP+4] :: y
+
+
+** dibujar_linea_vertical
+Dibuja una linea vertical
++ Parámetros
+  - [BP+10] :: color
+  - [BP+8] :: alto
+  - [BP+6] :: x
+  - [BP+4] :: y
+
+** dibujar_rectangulo
+Dibuja un rectangulo relleno de un color dado.
++ Parámetros
+  - [BP+12] :: color
+  - [BP+10] :: ancho
+  - [BP+8] :: alto
+  - [BP+6] :: x
+  - [BP+4] :: y
+
+* Archivo rep.asm
+** printPol_f
+Imprimir polinomio en archivo
++ Parametros
+  - [BP+6] :: handle del archivo
+  - [BP+4] :: puntero al inicio del arreglo que contiene la
+              expresion polinomica
+
+** printCoef_f
+Imprimir coeficiente en archivo
++ Parametros
+  - [PB+8] :: handle del archivo
+  - [BP+6] :: coeficiente en binario (word)
+  - [BP+4] :: exponente en binario (byte)
+
+** printNumBin_f
+Imprimir numero binario en archivo
++ Parametro
+  - [BP+6] :: valor para saber si se quiere imprimir los
+              positivos anteponiendo un '+'. Si tiene el
+              valor de POS_CON_MAS se imprime el '+'
+  - [BP+4] :: handle del archivo
++ Entradas
+  - ax :: el numero binario (word) a imprimir
++ Variables locales
+  - [BP-2] :: un temporal para ax
+  - [BP-4] :: un temporal para bx
+  - [BP-6] :: un temporal para cx
+
+* Archivo calgra.asm
+
+** evalPol
+Evaluar polinomio de 5 terminos como maximo
++ Entradas:
+  - di :: puntero a estructura que contiene el
+          polinomio a evaluar
++ Parámetros
+  - [PB+4] :: número a evaluar de un word (x)
++ Variables locales
+  - [BP-2] :: temporal que al final será ax
+  - [BP-4] :: contador para bucle mayor
++ Salidas
+  - ax :: el resultado de la evaluación (y)
+
+
+** printInfoEsquina
+imprimir cantidad de polinomios actuales en el sistema y
+cuanto es el maximo que puede ingresarse. Esto en la
+esquina inferior derecha.
+
+
+Crear reportes.
++ Variables locales
+  - [BP-2] :: handle de archivo ya sea el creado para
+              polinomios del sistema o bien el creado para
+              ecuaciones resueltas. Es uno o el otro nunca
+              ámbos.
+  - [BP-4] :: contador del bucle
+  - [BP-6] :: para llevar la letra de cada funcion
+  - [BP-8] :: temporal para la evaluacion de puntos
+  - [BP-10] :: igual que el anterior
+
+** setOrientacionPol
+Establecer si un polinomio de grado 1,2,3 o 4, es positivo
+o negativo. Para uso exclusivo de rutina =conocerGrado=.
++ Entradas
+  - bx :: coeficiente del termino de exponenete mayor
++ Salidas
+  - ah :: POL_POSITIVO si positivo y POL_POSITIVO-1 si
+          negativo 
+
+
+** conocerGrado
+Saber el grado de un polinomio
++ Entradas
+  - di :: puntero a estructura que contiene el polinomio
++ Salidas
+  - al :: grado del polinomio
+  - ah :: POL_POSITIVO si positivo y POL_POSITIVO-1 si
+          negativo 	
+
+
+** Graficar polinomios
++ Variables locales
+  - [bp-2] :: contador temporal para bucle mayor
+  - [bp-4] :: limite inferior del rango a graficar (x0)
+  - [bp-6] :: limite superior del rango a graficar (x1)
+  - [bp-8] :: factor por el cual se dividen los puntos en
+              el eje Y, dependiendo si se trata de un
+              polinomio de 1,2,3 o 4 grado, esto para que
+              se logre la visualización más adecuada de la
+              gráfica considerando que se tiene solo 200
+              pixeles del modo de video para el eje Y. 
+
+
+** printIntegral
+Imprime una integral en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de integrales.
++ Entrada
+  - si :: polinomio integrado
+
+
+** printDerivada
+Imprime una derivada en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de derivadas.
++ Entrada
+  - si :: polinomio derivado de otro polinomio
+
+
+** printPolinomio
+Imprime una integral en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de funcion
+identificandola con una letra mayuscula.
++ Entrada
+  - di :: polinomio original que no es derivada ni integral
+          de otro polinomio
+
+
+** printCoef
+Imprimir coeficiente en la salida estandar
++ Parametros
+  - [BP+6] :: coeficiente en binario (word)
+  - [BP+4] :: exponente en binario (byte)
+
+** printPol
+Imprimir polinomio en salida estandar
++ Parametros
+  - [BP+4] :: puntero al inicio del arreglo que contiene la
+              expresion polinomica
+
+** integrarPol
+Integra una polinomio de 5 terminos como maximo
++ Entrada:
+  - di :: puntero a estructura que contiene el polinomio a
+          integrar.
+  - si :: puntero a estructura donde guardar la integración.
+
+** integrarPol
+Integra una polinomio de 5 terminos como maximo
++ Entrada:
+  - di :: puntero a estructura que contiene el polinomio a
+          derivar.
+  - si :: puntero a estructura donde guardar la derivación.
+
+
+** ing''
+Opcion "ingresar" del menú principal, cuyo objetivo es
+cargar un archivo con expresiones polinómicas terminadas en
+';'
++ Variables Locales
+  - [BP-2] :: guarda el handle del archivo abierto.

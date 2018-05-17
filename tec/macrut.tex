@@ -1,0 +1,805 @@
+\section{Archivo io.mac}
+\label{sec-1}
+Macros para entrada y salida utilizando interrupciones. Son
+ejecutables en DOS. Para emular DOS se utilizó DOSBox. Es ensamblado
+por NASM.
+  
+\subsection{TERMINAR\_PROGRAMA}
+\label{sec-1-1}
+Salir del programa
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[vacio] nada
+\end{description}
+\item Salida
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+\subsection{PRINT}
+\label{sec-1-2}
+Imprimir cadena en salida estandar.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[dx,\%1] puntero a cadena que termina en ''\$''
+\end{description}
+\item Salida
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+\subsection{PRINT\_CHAR}
+\label{sec-1-3}
+Imprimir caracter en la salida estandar
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[dl,\%1] el caracter a imprimir
+\end{description}
+\item Salida
+\begin{description}
+\item[al] la ultima salida de caracter
+\end{description}
+\end{itemize}
+\href{http://www.ctyme.com/intr/rb-2554.htm}{ir}
+
+\subsection{ABRIR\_ARCHIVO}
+\label{sec-1-4}
+Abre un archivo existente.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[dx,\%1] puntero a cadena con nombre/ruta del archivo a
+abrir. Este nombre debe finalizar en 0
+\end{description}
+\item Salidas
+\begin{description}
+\item[CF=0] archivo se abrio exitosamente. En AX el handle
+del archivo
+\item[CF=1] ocurrio algun error. El código del error en AX
+\end{description}
+\end{itemize}
+\href{http://www.ctyme.com/intr/rb-2779.htm}{ir}
+
+\subsection{LEER\_ARCHIVO}
+\label{sec-1-5}
+Lee archivo abierto.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[bx,\%1] handle del archivo
+\item[cx,\%2] numero de bytes a leer
+\item[dx,\%3] buffer en donde guardar lo leido
+\end{description}
+\item Salidas
+\begin{description}
+\item[CF=0] se leyo exitosamente. En AX el numero de bytes
+actualmente leídos
+\item[CF=1] ocurrio algun error. El código del error en AX
+\end{description}
+\end{itemize}
+\href{http://www.ctyme.com/intr/rb-2783.htm}{ir}
+
+
+\subsection{ESENAR}
+\label{sec-1-6}
+EScribir EN un ARchivo abierto
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[bx,\%1] handle del archivo
+\item[cx,\%2] numero de bytes a escribir
+\item[dx,\%3] puntero a array que se escribirá
+\end{description}
+\item Salidas
+\begin{description}
+\item[CF=0] se escribió exitosamente. En AX el numero de
+bytes actualmente escritos.
+\item[CF=1] ocurrio algun error. El código del error en AX
+(05h,06h).
+\end{description}
+\end{itemize}
+\href{http://www.ctyme.com/intr/rb-2791.htm}{ir}
+
+
+\subsection{CERRAR\_ARCHIVO}
+\label{sec-1-7}
+Cierra un archivo
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[bx,\%1] handle del archivo a cerrar
+\end{description}
+\item Salida
+\begin{description}
+\item[CF=0] se cerro exitosamente. AX destruido
+\item[CF=1] ocurrio algun error al cerrar. En AX el código
+de error (06h).
+\end{description}
+\end{itemize}
+
+\subsection{CREAR\_ARCHIVO}
+\label{sec-1-8}
+Crear un archivo nuevo o truncar si ya existe.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[dx,\%1] puntero a cadena que será nombre del
+archivo. Este nombre debe terminar en 0.
+\end{description}
+\item Salida
+\begin{description}
+\item[CF=0] se creo exitosamente. En AX el handle de
+archivo.
+\item[CF=1] ocurrio algun error al crear En AX el código
+de error (03h,04h,05h).
+\end{description}
+\end{itemize}
+\href{http://www.ctyme.com/intr/rb-2778.htm#Table1401}{ir}
+
+
+\subsection{UBICAR\_CURSOR}
+\label{sec-1-9}
+ubicar cursor en la pantalla cuando se esta en modo
+texto.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[dh,\%1] fila
+\item[dl,\%2] columna
+\end{description}
+\end{itemize}
+
+
+\subsection{LIMPIAR\_PANTALLA}
+\label{sec-1-10}
+Limpiar pantalla cuando se esta en modo texto.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[vacio] nada
+\end{description}
+\item Salida
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+
+\subsection{DESPLAZAR\_ARRIBA}
+\label{sec-1-11}
+Desplaza hacia arriba. Es como borrar la pantalla según los
+parámentros explicados a  continuación:
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[ch,\%1] fila superior izquierda
+\item[cl,\%2] columna superior izquierda
+\item[dh,\%3] fila inferior derecha
+\item[dl,\%4] columna inferior derecha
+\item[al,\%5] número de líneas a desplazarse hacia arriba
+\end{description}
+\item Salida
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+\href{http://www.ctyme.com/intr/rb-0096.htm}{ir}
+
+
+\subsection{GETCHAR}
+\label{sec-1-12}
+Obtiene ascii de tecla presionada sin eco, via BIOS.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[vacio] nada
+\end{description}
+\item Salida
+\begin{description}
+\item[AL] en este registro se almacena el caracter leido
+\end{description}
+\end{itemize}
+
+\subsection{READ\_FOR\_BUFF\_INPUT}
+\label{sec-1-13}
+lee cadena de entrada estandar y lo guarda un arreglo. Se
+refirá a este arreglo como buffInput, de aqui en adelante. 
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[dh,\%1] fila
+\item[bx,\%2] columna
+\item[dx,\%3] arreglo donde guardar la entrada del usuario
+\end{description}
+\item Salida
+\begin{itemize}
+\item arreglo buffInput con la entrada del usuario. La
+interrupcion utilizada deja dicho arreglo en el
+siguiente formato, suponiedo que el usuario ingreso
+la cadena ''cad'' en la entrada estandar:
+\begin{verbatim}
++--+---+---+---+---+----+---+
+|41| 3 | c | a | d | \r |.. |
++--+---+---+---+---+----+---+
+\end{verbatim}
+
+donde:
+\begin{itemize}
+\item\relax [buffInput] contiene 41, indica el numero maximo de
+chars que puede guardar
+\item\relax [buffInput+1] contiene 3 indica el numero de chars
+ingresados por el usuario
+\item\relax [buffInput+2] contiene ''c'' es el primer char de la
+cadena ingresada. La siguientes dos posiciones tiene
+''a'' y ''d''
+\item\relax [buffInput+5] contiene el retorno de carro. El
+contenido del resto del arreglo esta indefinido
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\subsection{READ\_FOR\_BUFF\_INPUT}
+\label{sec-1-14}
+Lee cadena de entrada estandar y lo guarda un arreglo. NO
+necesita de fila y columna.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[dx,\%1] arreglo donde guardar la entrada del usuario
+\end{description}
+\item Salida
+\begin{itemize}
+\item arreglo buffInput con la entrada del usuario.
+\end{itemize}
+\end{itemize}
+
+\subsection{PRINT}
+\label{sec-1-15}
+Imprimir cadena en salida estandar en una fila y columna
+especificada.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[dh,\%1] fila
+\item[dl,\%2] columna
+\item[dx,\%3] puntero a cadena que termina en ''\$''
+\end{description}
+\item Salida
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+\subsection{GETCHAR}
+\label{sec-1-16}
+Obtiene ascii de tecla presionada, aunque se emplea para
+parar el programa, hasta que el usuario presione alguna
+tecla, mostrando un mensaje que venga al caso.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[\%1] Puntero a cadena que se mostrara.
+\end{description}
+\item Salida
+\begin{description}
+\item[AL] en este registro se almacena el caracter leido
+\end{description}
+\end{itemize}
+
+\section{Archivo anlex2.asm}
+\label{sec-2}
+Contiene la funcion ''scanner'' que realiza el analisis lexico de una
+funcion polinomica de grado 4 con coeficientes de dos digitos
+positivos o negativos. Un termino correcto debe iniciar con ''+'' o ''-''
+seguido de cero, uno o dos digitos. Luego puede venir o no una ''x'' o
+bien ''x'' seguido por ''2'' o ''3'' o ''4''. La expresion regular es la
+siguiente:
+\begin{verbatim}
+ER=(('+'|'-')(<d>?<d>)?[x^<expo>|x]?)+;
+donde: <d>=0|1|2|3|4|5|6|7|8|9 y <expo>=2|3|4
+\end{verbatim}
+
+Estos son algunos ejemplos de cadenas lexicamente correctas para este
+lenguaje (debe terminar en '';''):
+\begin{verbatim}
++2x+1-99x  +29  +x +29;
+-90x^3 +5  5x^2;
+\end{verbatim}
+
+
+\subsection{scanner}
+\label{sec-2-1}
+
+Realiza un analisis lexico de la cadena terminada en '';''. Muestra fila
+y columna si ocurre error. Muestra exito si se reconoce la
+cadena. Guarda los exponentes y coeficientes en una arreglo de
+estructuras.
+
+\begin{itemize}
+\item Parametro
+\begin{description}
+\item[[BP+6]] puntero al primer elemento del arreglo de chars a
+analizar
+\item[[BP+4]] puntero a estructura que guarda coeficientes y
+exponentes y otros datos de la funcion.
+\end{description}
+\item Variables Locales
+\begin{enumerate}
+\item\relax [BP-2]  fila
+\item\relax [BP-4]  columna
+\item\relax [BP-6]  entrada
+\item\relax [BP-8]  estado
+\item\relax [BP-0xA]  exponente
+\item\relax [BP-0xC]  primer char ascii de un coeficiente
+\item\relax [BP-0xE]  segundo char ascii de un coeficiente
+\item\relax [BP-0x10]  tercer char ascii de un coeficiente
+\item\relax [BP-0x12]  numero de chars que forman el coeficiente
+\item\relax [BP-0x14] contador de terminos por funcion
+\end{enumerate}
+\end{itemize}
+
+
+\subsection{scanner\_f}
+\label{sec-2-2}
+Lo mismo que scanner solo que trabaja con un archivo.
+
+\begin{itemize}
+\item Parametro
+\begin{description}
+\item[[BP+6]] handle del archivo de donde lee
+\item[[BP+4]] puntero a estructura que guarda coeficientes y
+exponentes y otros datos de la funcion.
+\end{description}
+\item Variables Locales
+\begin{enumerate}
+\item\relax [BP-2]  fila
+\item\relax [BP-4]  columna
+\item\relax [BP-6]  entrada
+\item\relax [BP-8]  estado
+\item\relax [BP-0xA]  exponente
+\item\relax [BP-0xC]  primer char ascii de un coeficiente
+\item\relax [BP-0xE]  segundo char ascii de un coeficiente
+\item\relax [BP-0x10]  tercer char ascii de un coeficiente
+\item\relax [BP-0x12]  numero de chars que forman el coeficiente
+\item\relax [BP-0x14] contador de terminos por función
+\end{enumerate}
+\end{itemize}
+
+\subsection{rutinaDeError}
+\label{sec-2-3}
+Imprime un mensaje de error lexico.
+\begin{itemize}
+\item Parametros
+\begin{description}
+\item[[bp+8]] Fila en binario
+\item[[bp+6]] Columna en binario
+\item[[bp+4]] El caracter ascii que causo el error
+\end{description}
+\item Entrada
+\begin{description}
+\item[bx] puntero a cadena que describe el error
+\end{description}
+\item Salidas
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+\subsection{convNumStrParaNumBin}
+\label{sec-2-4}
+Convertir numero en string a numero en binario para el manejo interno
+como cantidad de la representacion numerica de la cadena. Se utilizó
+para leer la cadena directamente de la pila.
+
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[di] puntero al primer elemento del arreglo de caracteres
+(cadena) a convertir. Cada caracter debe estar a cada dos
+bytes. Esto es porque se utilizó para leer de la pila cuyos
+elementos son de 2 bytes.
+
+\item[cl] tamaño de la cadena apuntada por bx
+\end{description}
+
+\item Salida
+\begin{description}
+\item[ax] el numero de 1 word en binario. En complemento a dos si es
+negativo.
+\end{description}
+
+\item Variable local
+\begin{description}
+\item[[BP-2]] variable temporal (temp) que guarda la cantidad que
+finalmente se guarda en ax al terminar el proceso
+\end{description}
+\end{itemize}
+
+\subsection{convNumStrParaNumBin\_arr}
+\label{sec-2-5}
+Igual que ''convNumStrParaNumBin'' solo que el array de caracteres deben
+estar a cada byte no a cada dos, esto para que no necesariamente deba
+leerse desde la pila.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[di] puntero al primer elemento del arreglo de caracteres
+(cadena) a convertir.
+\item[cl] tamaño de la cadena apuntada por di
+\end{description}
+
+\item Salida
+\begin{description}
+\item[ax] el numero de 1 word en binario. En complemento a dos si es
+negativo.
+\end{description}
+
+\item Variable local
+\begin{description}
+\item[[BP-2]] variable temporal (temp) que guarda la cantidad que
+finalmente se guarda en ax al terminar el proceso
+\end{description}
+\end{itemize}
+
+\subsection{printNumBin}
+\label{sec-2-6}
+Imprimir numero binario en la salida estandar
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[ax] el numero binario (word) a imprimir
+\end{description}
+\item Salidas
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+
+\subsection{printNumBin\_mas}
+\label{sec-2-7}
+Lo mismo que printNumBin solo que los positivos les antepone el signo
+positivo ''+''
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[ax] el numero binario (word) a imprimir
+\end{description}
+\item Salidas
+\begin{description}
+\item[vacio] nada
+\end{description}
+\end{itemize}
+
+
+\section{Archivo ploter.asm}
+\label{sec-3}
+
+\subsection{dibujar\_plano}
+\label{sec-3-1}
+dibuja los ejes X y Y del plano cartesiano
+\begin{itemize}
+\item Parámetros
+\begin{description}
+\item[[BP+6]] posición x del origen
+\item[[BP+4]] posición y del origen
+\end{description}
+\end{itemize}
+
+\subsection{putPixel}
+\label{sec-3-2}
+Pinta un pixel en cordenada y color dado. Las coordenadas
+son con respecto al origen del plano establecido durante la
+llamada ha ''dibujar\_plano''.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[dl] color
+\item[bx] coordenada x
+\item[ax] coordenada y
+\end{description}
+\end{itemize}
+
+\subsection{dibujar\_linea\_horizontal}
+\label{sec-3-3}
+dibuja una linea horizontal
+\begin{itemize}
+\item Parámetros
+\begin{description}
+\item[[BP+10]] color
+\item[[BP+8]] ancho
+\item[[BP+6]] x
+\item[[BP+4]] y
+\end{description}
+\end{itemize}
+
+
+\subsection{dibujar\_linea\_vertical}
+\label{sec-3-4}
+Dibuja una linea vertical
+\begin{itemize}
+\item Parámetros
+\begin{description}
+\item[[BP+10]] color
+\item[[BP+8]] alto
+\item[[BP+6]] x
+\item[[BP+4]] y
+\end{description}
+\end{itemize}
+
+\subsection{dibujar\_rectangulo}
+\label{sec-3-5}
+Dibuja un rectangulo relleno de un color dado.
+\begin{itemize}
+\item Parámetros
+\begin{description}
+\item[[BP+12]] color
+\item[[BP+10]] ancho
+\item[[BP+8]] alto
+\item[[BP+6]] x
+\item[[BP+4]] y
+\end{description}
+\end{itemize}
+
+\section{Archivo rep.asm}
+\label{sec-4}
+\subsection{printPol\_f}
+\label{sec-4-1}
+Imprimir polinomio en archivo
+\begin{itemize}
+\item Parametros
+\begin{description}
+\item[[BP+6]] handle del archivo
+\item[[BP+4]] puntero al inicio del arreglo que contiene la
+expresion polinomica
+\end{description}
+\end{itemize}
+
+\subsection{printCoef\_f}
+\label{sec-4-2}
+Imprimir coeficiente en archivo
+\begin{itemize}
+\item Parametros
+\begin{description}
+\item[[PB+8]] handle del archivo
+\item[[BP+6]] coeficiente en binario (word)
+\item[[BP+4]] exponente en binario (byte)
+\end{description}
+\end{itemize}
+
+\subsection{printNumBin\_f}
+\label{sec-4-3}
+Imprimir numero binario en archivo
+\begin{itemize}
+\item Parametro
+\begin{description}
+\item[[BP+6]] valor para saber si se quiere imprimir los
+positivos anteponiendo un ''+''. Si tiene el
+valor de POS\_CON\_MAS se imprime el ''+''
+\item[[BP+4]] handle del archivo
+\end{description}
+\item Entradas
+\begin{description}
+\item[ax] el numero binario (word) a imprimir
+\end{description}
+\item Variables locales
+\begin{description}
+\item[[BP-2]] un temporal para ax
+\item[[BP-4]] un temporal para bx
+\item[[BP-6]] un temporal para cx
+\end{description}
+\end{itemize}
+
+\section{Archivo calgra.asm}
+\label{sec-5}
+
+\subsection{evalPol}
+\label{sec-5-1}
+Evaluar polinomio de 5 terminos como maximo
+\begin{itemize}
+\item Entradas:
+\begin{description}
+\item[di] puntero a estructura que contiene el
+polinomio a evaluar
+\end{description}
+\item Parámetros
+\begin{description}
+\item[[PB+4]] número a evaluar de un word (x)
+\end{description}
+\item Variables locales
+\begin{description}
+\item[[BP-2]] temporal que al final será ax
+\item[[BP-4]] contador para bucle mayor
+\end{description}
+\item Salidas
+\begin{description}
+\item[ax] el resultado de la evaluación (y)
+\end{description}
+\end{itemize}
+
+
+\subsection{printInfoEsquina}
+\label{sec-5-2}
+imprimir cantidad de polinomios actuales en el sistema y
+cuanto es el maximo que puede ingresarse. Esto en la
+esquina inferior derecha.
+
+
+Crear reportes.
+\begin{itemize}
+\item Variables locales
+\begin{description}
+\item[[BP-2]] handle de archivo ya sea el creado para
+polinomios del sistema o bien el creado para
+ecuaciones resueltas. Es uno o el otro nunca
+ámbos.
+\item[[BP-4]] contador del bucle
+\item[[BP-6]] para llevar la letra de cada funcion
+\item[[BP-8]] temporal para la evaluacion de puntos
+\item[[BP-10]] igual que el anterior
+\end{description}
+\end{itemize}
+
+\subsection{setOrientacionPol}
+\label{sec-5-3}
+Establecer si un polinomio de grado 1,2,3 o 4, es positivo
+o negativo. Para uso exclusivo de rutina \texttt{conocerGrado}.
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[bx] coeficiente del termino de exponenete mayor
+\end{description}
+\item Salidas
+\begin{description}
+\item[ah] POL\_POSITIVO si positivo y POL\_POSITIVO-1 si
+negativo
+\end{description}
+\end{itemize}
+
+
+\subsection{conocerGrado}
+\label{sec-5-4}
+Saber el grado de un polinomio
+\begin{itemize}
+\item Entradas
+\begin{description}
+\item[di] puntero a estructura que contiene el polinomio
+\end{description}
+\item Salidas
+\begin{description}
+\item[al] grado del polinomio
+\item[ah] POL\_POSITIVO si positivo y POL\_POSITIVO-1 si
+negativo
+\end{description}
+\end{itemize}
+
+
+\subsection{Graficar polinomios}
+\label{sec-5-5}
+\begin{itemize}
+\item Variables locales
+\begin{description}
+\item[[bp-2]] contador temporal para bucle mayor
+\item[[bp-4]] limite inferior del rango a graficar (x0)
+\item[[bp-6]] limite superior del rango a graficar (x1)
+\item[[bp-8]] factor por el cual se dividen los puntos en
+el eje Y, dependiendo si se trata de un
+polinomio de 1,2,3 o 4 grado, esto para que
+se logre la visualización más adecuada de la
+gráfica considerando que se tiene solo 200
+pixeles del modo de video para el eje Y.
+\end{description}
+\end{itemize}
+
+
+\subsection{printIntegral}
+\label{sec-5-6}
+Imprime una integral en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de integrales.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[si] polinomio integrado
+\end{description}
+\end{itemize}
+
+
+\subsection{printDerivada}
+\label{sec-5-7}
+Imprime una derivada en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de derivadas.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[si] polinomio derivado de otro polinomio
+\end{description}
+\end{itemize}
+
+
+\subsection{printPolinomio}
+\label{sec-5-8}
+Imprime una integral en salida estandar. Basicamente es lo
+mismo que printPol, la diferencia es que antes de hacer la
+llamada a printPol imprime la notacion de funcion
+identificandola con una letra mayuscula.
+\begin{itemize}
+\item Entrada
+\begin{description}
+\item[di] polinomio original que no es derivada ni integral
+de otro polinomio
+\end{description}
+\end{itemize}
+
+
+\subsection{printCoef}
+\label{sec-5-9}
+Imprimir coeficiente en la salida estandar
+\begin{itemize}
+\item Parametros
+\begin{description}
+\item[[BP+6]] coeficiente en binario (word)
+\item[[BP+4]] exponente en binario (byte)
+\end{description}
+\end{itemize}
+
+\subsection{printPol}
+\label{sec-5-10}
+Imprimir polinomio en salida estandar
+\begin{itemize}
+\item Parametros
+\begin{description}
+\item[[BP+4]] puntero al inicio del arreglo que contiene la
+expresion polinomica
+\end{description}
+\end{itemize}
+
+\subsection{integrarPol}
+\label{sec-5-11}
+Integra una polinomio de 5 terminos como maximo
+\begin{itemize}
+\item Entrada:
+\begin{description}
+\item[di] puntero a estructura que contiene el polinomio a
+integrar.
+\item[si] puntero a estructura donde guardar la integración.
+\end{description}
+\end{itemize}
+
+\subsection{integrarPol}
+\label{sec-5-12}
+Integra una polinomio de 5 terminos como maximo
+\begin{itemize}
+\item Entrada:
+\begin{description}
+\item[di] puntero a estructura que contiene el polinomio a
+derivar.
+\item[si] puntero a estructura donde guardar la derivación.
+\end{description}
+\end{itemize}
+
+
+\subsection{ing}
+\label{sec-5-13}
+Opcion ''ingresar'' del menú principal, cuyo objetivo es
+cargar un archivo con expresiones polinómicas terminadas en
+'';''
+\begin{itemize}
+\item Variables Locales
+\begin{description}
+\item[[BP-2]] guarda el handle del archivo abierto.
+\end{description}
+\end{itemize}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "tec"
+%%% End:

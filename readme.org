@@ -1,0 +1,40 @@
+* Calgra
+La aplicación consiste en una calculadora que permite ingresar una
+función polinómica de hasta grado 4, cuyas operaciones son: derivar,
+integrar y graficar. También resolver ecuaciones de grado no mayor a
+dos. Las raíces que puede encontrar son enteras signadas (positivas y
+negativas). Dichas funciones pueden ser ingresadas manualmente y
+mediante un archivo de entrada.
+
+La implementación se realiza en ensamblador utilizando [[https://nasm.us/][NASM]] versión
+2.13.03. Se utilizan solo instrucciones para CPU 8086 para DOS. Para
+probar el ejecutable se emplea [[https://www.dosbox.com/][DOSBox]].
+
+La interacción con el usuario se logra empleando interrupciones.
+
+Para la graficación se emplea el modo de video 13h.
+
+Se utiliza 16 bits para representar un número signado. Esto quiere
+decir que las cantidades que puede manejar están entre =-(2^{16}-1)/2=
+y =+(2^{16}-1)/2=.
+
+* Descripción de carpetas y archivos
+- in :: contiene archivos de entrada de ejemplo. Las que terminan en
+        /err/ incluyen errores que reconoce el programa.
+- src :: contien el codigo fuente final.
+- tec :: manual técnico en LaTeX.
+- test :: de esta carpeta se saca lo que hay en src. Contiene archivos
+          de código que fueron depurados individualmente (Turbo
+          Debugger) para luego se añadidos al código fuente
+          principal. También contiene el analizador lexico en =C= el
+          cual fue la base para la traducción a ensamblador.
+- usu :: manual de usuario en LaTeX.
+- calgra.com :: ejecutable 16 bits para DOS.
+- calgra.gif :: muestra del funcionamiento, primero derivando e
+                integrando lo polinomios del archivo =di-err.txt= (con
+                errores) ubicando la carpeta =in=. Luego resolviendo
+                las ecuaciones de =s-err.txt= (con errores), también
+                ubicado en la carpeta =in=.
+- er :: expresión regular en formato para Emacs, desde el cual
+        se estuvo probando para obtener la expresión que cumpliera con
+        la sintáxis de un polinomio.          
